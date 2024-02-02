@@ -17,7 +17,4 @@ public record User(
         long phoneNumber,
         @NotBlank
         String address) {
-
-
 }
-
