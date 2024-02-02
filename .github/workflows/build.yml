@@ -21,10 +21,9 @@ jobs:
 
       - name: Upgrade Maven to Latest Version
         run: |
-          export MAVEN_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          curl -sSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" | tar xz
+          curl -sSL "https://archive.apache.org/dist/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz" | tar xz
           sudo rm -rf /usr/share/maven
-          sudo mv apache-maven-${MAVEN_VERSION} /usr/share/maven
+          sudo mv apache-maven-3.8.5 /usr/share/maven
           sudo update-alternatives --quiet --install /usr/bin/mvn mvn /usr/share/maven/bin/mvn 20000
           mvn -version
 
