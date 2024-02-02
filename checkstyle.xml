@@ -148,4 +148,11 @@
 
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*//\s*\w+" />
+        <property name="message" value="Commented-out code is not allowed." />
+        <property name="severity" value="error"/>
+    </module>
+
+
 </module>
