@@ -8,6 +8,7 @@ public class CleanviewApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CleanviewApplication.class, args);
+        System.out.println("cleanview");
     }
 
 }
