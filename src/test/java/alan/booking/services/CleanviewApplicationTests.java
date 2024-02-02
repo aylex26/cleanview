@@ -1,4 +1,4 @@
-package com.example.cleanview;
+package alan.booking.services;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

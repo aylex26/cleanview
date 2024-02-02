@@ -7,7 +7,7 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.2</version>
     </parent>
-    <groupId>com.example</groupId>
+    <groupId>alan.booking.services</groupId>
     <artifactId>cleanview</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>cleanview</name>
