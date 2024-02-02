@@ -28,7 +28,7 @@ jobs:
           mvn -version
 
       - name: Build with Maven
-        run: mvn -B clean package
+        run: mvn -B clean install
 
       - name: Run Tests
         run: mvn test
