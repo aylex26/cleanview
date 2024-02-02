@@ -32,3 +32,10 @@ jobs:
 
       - name: Run Tests
         run: mvn test
+
+      - name: Debug
+        run: |
+          ls -l  # Listă conținutul directorului
+          pwd    # Afișează directorul de lucru curent
+          find . -name "target"  # Găsește directorul target
+          mvn clean package -X  # Rulează Maven cu opțiunea de debug (-X)
