@@ -78,8 +78,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+      - name: Terraform Init and Destroy
+        run: |
+          terraform init
+          terraform destroy -auto-approve
