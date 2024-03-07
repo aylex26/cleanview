@@ -1,64 +1,66 @@
-<dependencies>
-    <!-- Spring Boot dependencies -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-test</artifactId>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-    <!-- Dependency for PostgreSQL -->
-    <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <scope>runtime</scope>
-    </dependency>
-    <!-- Dependency for JWT -->
-    <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt</artifactId>
-        <version>0.9.1</version>
-    </dependency>
-</dependencies>
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+
+  spring-boot-app:
+    build: ./spring-boot-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+
+volumes:
+  postgres_data:
 
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import lombok.Data;
 
-@Entity
-@Data
-public class User {
+-- Crearea tabelului utilizatori
+CREATE TABLE utilizatori (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+-- Inserarea utilizatorului
+INSERT INTO utilizatori (username, password) VALUES ('alex', '12345');
 
-    private String username;
-    private String password;
-    private String salt;
 
-    // Constructori sunt generate automat de Lombok
 
-    // Getteri și setteri sunt generate automat de Lombok
-}
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+
+  spring-boot-app:
+    build: ./spring-boot-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+
+volumes:
+  postgres_data:
