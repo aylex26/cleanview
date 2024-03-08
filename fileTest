@@ -1,25 +1,22 @@
-@RestController
-public class TokenController {
-
-    @Autowired
-    private TokenService tokenService;
-
-    @GetMapping("/generateToken")
-    public String generateToken(@RequestParam String salt) {
-        return tokenService.generateToken(salt);
-    }
-}
-
-
-@Service
-public class TokenService {
-
-    private static final String USERNAME = "utilizator";
+private static final String USERNAME = "utilizator";
     private static final String PASSWORD = "parolă";
 
-    public String generateToken(String salt) {
-        String concatenated = USERNAME + PASSWORD + salt;
-        String hashed = DigestUtils.sha256Hex(concatenated); // Utilizează SHA-256 pentru hash
-        return hashed;
+    public String generateToken(String username, String password, String salt) {
+        if (USERNAME.equals(username) && PASSWORD.equals(password)) {
+            String concatenated = username + password + salt;
+            String hashed = DigestUtils.sha256Hex(concatenated);
+            return hashed;
+        } else {
+            return null;
+        }
     }
-}
+
+    @GetMapping("/generateToken")
+    public ResponseEntity<String> generateToken(@RequestParam String username, @RequestParam String password, @RequestParam String salt) {
+        String token = tokenService.generateToken(username, password, salt);
+        if (token != null) {
+            return ResponseEntity.ok(token);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: wrong user or password.");
+        }
+    }
