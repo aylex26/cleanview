@@ -1,17 +1,12 @@
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
-            <scope>runtime</scope>
-        </dependency>
+    public static Claims decodeToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY_STR)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims;
+        } catch (Exception e) {
+            System.out.println("Error decoding JWT token:" + e.getMessage());
+            return null;
+        }
+    }
