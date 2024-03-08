@@ -1,55 +1,17 @@
- private static final String SECRET_KEY_STR = "sbxhKWBHSXBHqwbhxdbvAQWHCVBahqwvbcawejvbcjhvabwkcvbkwekghvs";
-    private static final SecretKey SECRET_KEY = new SecretKeySpec(Base64.getDecoder().decode(SECRET_KEY_STR), SignatureAlgorithm.HS512.getJcaName());
-    private static final long JWT_EXPIRATION_MS = 360000000;
-
-    public String generateToken(String username, String password, String salt) {
-        if ("test1".equals(username) && "pass1".equals(password)) {
-            Date now = new Date();
-            Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
-
-            String concatenated = username + password + salt;
-            String hashedConcatenated = DigestUtils.sha256Hex(concatenated);
-
-            String token = Jwts.builder()
-                    .setSubject(hashedConcatenated)
-                    .setIssuedAt(now)
-                    .setExpiration(expiryDate)
-                    .signWith(SECRET_KEY)
-                    .compact();
-
-            Claims decodedClaims = decodeToken(token);
-            if (decodedClaims != null) {
-                System.out.println("JWT token successfully decoded.");
-                System.out.println("JWT Token Content: " + decodedClaims);
-            } else {
-                System.out.println("JWT token decoding failed.");
-            }
-
-            return token;
-        } else {
-            return null;
-        }
-    }
-
-    public static Claims decodeToken(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY_STR)
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims;
-        } catch (Exception e) {
-            System.out.println("Error decoding JWT token:" + e.getMessage());
-            return null;
-        }
-    }
-
- @GetMapping("/generateToken")
-    public ResponseEntity<String> generateToken(@RequestParam String username, @RequestParam String password, @RequestParam String salt) {
-        String token = tokenService.generateToken(username, password, salt);
-        if (token != null) {
-            return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: wrong user or password.");
-        }
-    }
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.2</version> <!-- sau versiunea cea mai recentă -->
+            <scope>runtime</scope>
+        </dependency>
