@@ -1,22 +1,264 @@
-    public static Claims decodeToken(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY_STR)
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims;
-        } catch (Exception e) {
-            System.out.println("Error decoding JWT token:" + e.getMessage());
-            return null;
+public class PasswordUtil {
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+    public static String generateSalt() {
+        byte[] salt = new byte[16];
+        secureRandom.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+    public static String hashPassword(String password, String salt) {
+        return DigestUtils.sha512Hex(password + salt);
+    }
+
+    public static boolean checkPassword(String password, String salt, String hashedPassword) {
+        String hashedInputPassword = hashPassword(password, salt);
+        return hashedInputPassword.equals(hashedPassword);
+    }
+}
+
+@@@@@@@@
+
+@RestController
+public class TokenController {
+
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private TokenService tokenService;
+
+    @PostMapping("/register")
+    public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest request) {
+        String username = request.getUsername();
+        String password = request.getPassword();
+        Boolean isAdmin = request.getIsAdmin();
+
+        String salt = PasswordUtil.generateSalt();
+
+        String hashedPassword = PasswordUtil.hashPassword(password, salt);
+        System.out.println(username);
+        System.out.println(hashedPassword);
+        System.out.println(salt);
+        System.out.println(isAdmin);
+
+        boolean registered = userService.registerUser(username, hashedPassword, salt, isAdmin);
+
+        if (registered) {
+            return ResponseEntity.ok("User registered successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to register user.");
         }
     }
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-import java.util.Date;
+    @GetMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestParam String username, @RequestParam String password) {
+        User user = userService.getUserByUsername(username);
+
+        if (user != null) {
+            if (PasswordUtil.checkPassword(password, user.getSalt(), user.getPassword())) {
+                String token = tokenService.generateToken(username);
+                System.out.println(tokenService.decodeToken(token));
+
+                if (token != null) {
+                    return ResponseEntity.ok(token);
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate token.");
+                }
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: wrong username or password.");
+    }
+
+    @GetMapping("/checktoken")
+    public ResponseEntity<Boolean> checkToken(@RequestParam String token) {
+        boolean isValid = tokenService.isValidToken(token);
+        return ResponseEntity.ok(isValid);
+    }
+}
+
+
+@@@@@
+
+
+@Service
+public class TokenService {
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.expiration}")
+    private long expirationTime;
+
+    public String generateToken(String username) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationTime);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, secretKey)
+                .compact();
+    }
+
+    public Claims decodeToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public boolean isValidToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Date expirationDate = claims.getExpiration();
+            Date now = new Date();
+            return !expirationDate.before(now);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+
+
+@@@@@@
+
+
+public class User {
+    private String username;
+    private String password;
+    private String salt;
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    private boolean isAdmin;
+
+    public User(String username, String password, String salt, boolean isAdmin) {
+        this.username = username;
+        this.password = password;
+        this.salt = salt;
+        this.isAdmin = isAdmin;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+}
+
+
+
+
+@@@@@
+
+
+
+public class UserLoginRequest {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    private String username;
+    private String password;
+}
+
+
+
+@@@@@
+
+
+public class UserRegistrationRequest {
+    private String username;
+    private String password;
+    private Boolean isAdmin;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+}
+
+@@@@
+
+
+@Service
+public class UserService {
+
+    private static Map<String, User> userDatabase = new HashMap<>();
+
+    public boolean registerUser(String username, String password, String salt, boolean isAdmin) {
+        if (userDatabase.containsKey(username)) {
+            return false;
+        }
+
+        userDatabase.put(username, new User(username, password, salt, isAdmin));
+        return true;
+    }
+
+    public User getUserByUsername(String username) {
+        return userDatabase.get(username);
+    }
+}
