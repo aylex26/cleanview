@@ -1,3 +1,13 @@
-Date now = new Date();
-        Date expirationDate = new Date(now.getTime() + TOKEN_EXPIRATION_MS);
-        payload.setExpirationDate(expirationDate);
+try {
+            // Verifică semnătura tokenului
+            Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes())) // Folosește o cheie secretă pentru verificarea semnăturii
+                .build()
+                .parseClaimsJws(token);
+
+            // Dacă nu a fost aruncată nicio excepție, semnătura este validă
+            return true;
+        } catch (Exception e) {
+            // În caz de orice excepție, consideră tokenul invalid
+            return false;
+        }
