@@ -1,22 +1,4 @@
-@PostMapping("/login")
-public ResponseEntity<String> loginUser(@RequestBody UserRegistrationRequest request) {
-    String username = request.getUsername();
-    String password = request.getPassword();
-
-    User user = userService.getUserByUsername(username);
-
-    if (user != null) {
-        if (PasswordUtil.checkPassword(password, user.getSalt(), user.getPassword())) {
-            String token = tokenService.generateToken(username);
-            System.out.println(tokenService.decodeToken(token));
-
-            if (token != null) {
-                return ResponseEntity.ok(token);
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate token.");
-            }
-        }
-    }
-
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: wrong username or password.");
-}
+ @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.salt = :salt WHERE u.username = :username")
+    int updateSaltByUsername(@Param("username") String username, @Param("salt") String salt);
