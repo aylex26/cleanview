@@ -1,4 +1,8 @@
- @Transactional
-    @Modifying
-    @Query("UPDATE User u SET u.salt = :salt WHERE u.username = :username")
-    int updateSaltByUsername(@Param("username") String username, @Param("salt") String salt);
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
