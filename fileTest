@@ -1,67 +1,30 @@
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class Payload {
-    private String username;
-    private String claims;
-    private String role;
-
-    // Constructor, getters și setters
-
-    public String toString() {
-        try {
-            return new ObjectMapper().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-}
-
-
-
-Pentru a realiza aceasta, trebuie să faceți următoarele modificări:
-
-În clasa Payload, definiți metoda toString astfel încât să returneze un șir de caractere JSON:
-java
-Copy code
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class Payload {
-    private String username;
-    private String claims;
-    private String role;
-
-    // Constructor, getters și setters
-
-    public String toString() {
-        try {
-            return new ObjectMapper().writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-}
-Modificați metoda generateToken din TokenService pentru a utiliza metoda toString a obiectului Payload:
-java
-Copy code
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-
-public class TokenService {
-    private static final String SECRET_KEY = "your_secret_key";
-
-    public String generateToken(String username, String claims) {
+public String generateToken(String username, String claims) {
         Payload payload = new Payload();
         payload.setUsername(username);
         payload.setClaims(claims);
         payload.setRole("admin");
+        payload.setExpirationDate(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_MS));
 
         return Jwts.builder()
                 .setPayload(payload.toString())
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 .compact();
     }
-}
+
+
+ public boolean isValidToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Payload payload = new ObjectMapper().readValue(claims.get("payload", String.class), Payload.class);
+
+            Date expirationDate = payload.getExpirationDate();
+            Date now = new Date();
+            return !expirationDate.before(now);
+        } catch (Exception e) {
+            return false;
+        }
+    }
